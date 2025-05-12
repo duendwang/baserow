@@ -1,0 +1,57 @@
+services:
+  baserow:
+    image: baserow/baserow:1.33.2
+    restart: unless-stopped
+    expose:
+      - 80
+    environment:
+      BASEROW_PUBLIC_URL: ${BASEROW_PUBLIC_URL:?missing BASEROW_PUBLIC_URL}
+      SECRET_KEY: ${SECRET_KEY:?missing SECRET_KEY}
+      DATABASE_HOST: ${DATABASE_HOST:-postgres}
+      DATABASE_NAME: ${DATABASE_NAME:-baserow}
+      DATABASE_USER: ${DATABASE_USER:-baserow}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-baserow}
+      DATABASE_PORT: {$DATABASE_PORT:-5432}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_USER: ${REDIS_USER:-redis}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PROTOCOL: ${REDIS_PROTOCOL:-RESP}
+      EMAIL_SMTP: ${EMAIL_SMTP:-false}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+      EMAIL_SMTP_USE_TLS: ${EMAIL_SMTP_USE_TLS}
+      BASEROW_OPENAI_API_KEY: ${BASEROW_OPENAI_API_KEY}
+      BASEROW_OPENAI_ORGANIZATION: ${BASEROW_OPENAI_ORGANIZATION}
+      BASEROW_OPENAI_MODELS: ${BASEROW_OPENAI_MODELS}
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.baserow.entrypoints=websecure"
+      - "traefik.http.routers.baserow.rule=Host(`$DOMAIN`)"
+      - "traefik.http.routers.baserow.tls.certresolver=http-challenge"
+    volumes:
+      - baserow:/baserow/data
+    networks:
+      - default
+      - traefik-proxy
+  postgres:
+    image: bitnami/postgresql:15
+    restart: unless-stopped
+    environment:
+    volumes:
+      - postgres:/bitnami/postgresql
+  redis:
+    image: bitnami/redis:latest
+    restart: unless-stopped
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+volumes:
+  baserow:
+  postgres:
+networks:
+  default:
+  traefik-proxy:
+    external: true
