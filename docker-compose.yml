@@ -13,10 +13,10 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:-baserow}
       DATABASE_PORT: ${DATABASE_PORT:-5432}
       REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_USER: ${REDIS_USER:-redis}
+      REDIS_USER: ${REDIS_USER:-default}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
-      REDIS_PROTOCOL: ${REDIS_PROTOCOL:-RESP}
+      REDIS_PROTOCOL: ${REDIS_PROTOCOL:-redis}
       EMAIL_SMTP: ${EMAIL_SMTP:-false}
       EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
       EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
@@ -28,7 +28,6 @@ services:
       BASEROW_OPENAI_MODELS: ${BASEROW_OPENAI_MODELS}
     labels:
       - "traefik.enable=true"
-      # HTTP Routers
       - "traefik.http.routers.baserow.entrypoints=websecure"
       - "traefik.http.routers.baserow.rule=Host(`$DOMAIN`)"
       - "traefik.http.routers.baserow.tls.certresolver=http-challenge"
@@ -41,6 +40,9 @@ services:
     image: bitnami/postgresql:15
     restart: unless-stopped
     environment:
+      POSTGRESQL_DATABASE: ${DATABASE_NAME:-baserow}
+      POSTGRESQL_USERNAME: ${DATABASE_USER:-baserow}
+      POSTGRESQL_PASSWORD: ${DATABASE_PASSWORD:-baserow}
     volumes:
       - postgres:/bitnami/postgresql
   redis:
@@ -48,6 +50,7 @@ services:
     restart: unless-stopped
     environment:
       ALLOW_EMPTY_PASSWORD: yes
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis}
 volumes:
   baserow:
   postgres:
